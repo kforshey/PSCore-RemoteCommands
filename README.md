@@ -7,4 +7,4 @@ To use the Cmdlet to make a call on a non Windows machine, make sure it is set u
 ExecuteRemoteCommand -UserName 'test' -Password 'testpw' -HostName 'windowstest' -CommandText 'ip addr' -RunOnWindows $true -Arguments (a, b, c, d)
 
 The argument names should be pretty self explanatory, but for explanation, the -RunOnWindows argument tells the cmdlet if the remote machine is running on Windows or non Windows and which branch of code to follow.
-To use the module, each time you open up a new Poewershell Core window, you need to run Import-Module pathto\PSCore-RemoteCommands.psm1.  I have in the past put this line of code in my $PROFILE file, but that's the way we have to do it until I get this in the official powwershell gallery.
+To use the module, each time you open up a new Poewershell Core window, you need to run Import-Module pathto\PSCore-RemoteCommands.psm1.  I have in the past put this line of code in my $PROFILE file, but that's the way we have to do it until I get this in the official powershell gallery.
