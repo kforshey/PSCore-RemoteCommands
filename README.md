@@ -8,3 +8,5 @@ ExecuteRemoteCommand -UserName 'test' -Password 'testpw' -HostName 'windowstest'
 
 The argument names should be pretty self explanatory, but for explanation, the -RunOnWindows argument tells the cmdlet if the remote machine is running on Windows or non Windows and which branch of code to follow.
 To use the module, each time you open up a new Poewershell Core window, you need to run Import-Module pathto\PSCore-RemoteCommands.psm1.  I have in the past put this line of code in my $PROFILE file, but that's the way we have to do it until I get this in the official powershell gallery.
+
+Compatability -- This module works in Powershell Core (Tested on both windows and Linux(Fedora)) using version 7.0.3.  It works in Powershell 5 when making calls to remote Windows hosts, but not Linux.
