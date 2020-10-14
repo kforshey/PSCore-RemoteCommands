@@ -31,13 +31,75 @@ function  CreateSession {
         [Parameter(Mandatory)]
         [string]
         [Alias("Sessionhost")]
-        $SHost
+        $SHost,
+
+        [Parameter()]
+        [bool]
+        [Alias("SSHCommand")]
+        $isSSH
     )
+    if (!$isSSH)
+    {
     $securepwd = ConvertTo-SecureString -Force -AsPlainText -String $SPassword;
     $creds = New-Object -TypeName System.Management.Automation.PSCredential($SUser, $securepwd)
     
     $session = New-PSSession -ComputerName $SHost -Credential $creds;
     return $session;
+    }
+    else {
+        
+        $session = New-PSSession -HostName "$SUser@$SHost" -SSHTransport;
+        return $session;
+    }
+    
+}
+
+function RunCommandInSSH {
+    param (
+        [Parameter(Mandatory)]
+        [string]
+        [Alias("SSHUser")]
+        $sUser,
+
+        [Parameter(Mandatory)]
+        [string]
+        [Alias("SSHPassword")]
+        $sPassword,
+
+        [Parameter(Mandatory)]
+        [string]
+        [Alias("SSHHost")]
+        $sHost,
+
+        [Parameter(Mandatory)]
+        [string]
+        [Alias("SSHCommand")]
+        $sCommand,
+
+        [Parameter()]
+        [string[]]
+        [Alias("SSHArguments")]
+        $sArguments
+    )
+    "Running command in SSH";
+    $sessionscript = [scriptblock]::Create($sCommand);
+    $session = CreateSession -SessionUser $sUser -SessionPassword $sPassword -SessionHost $sHost -SSHCommand $true;
+    if ($null -ne $session)
+    {
+        try
+        {
+            $results = Invoke-Command -Session $session -ArgumentList $sArguments -ScriptBlock $sessionscript;
+        }
+        catch
+        {
+            $results = "Unable to run SSH command due to:  " + $_.Exception.Message;
+        }
+
+    }
+    else {
+        
+    }
+    return $results;
 }
 
 function ExecuteRemoteCommand() {
@@ -75,12 +137,10 @@ function ExecuteRemoteCommand() {
     )
         $commandscript = [scriptblock]::Create($script);
         
-            
+     
         
         if ($iswindowshost)
         {
-            "Windows";
-
             try {
                 $session = CreateSession -SessionUser $UName -SessionPassword $userpassword -Sessionhost $computer;
             }
@@ -93,7 +153,6 @@ function ExecuteRemoteCommand() {
                # $session = New-PSSession -HostName $Uname@$computer
                 if ($null -ne $session)
                 {
-                    "session created"
                     $results = Invoke-Command -Session $session -ScriptBlock $commandscript;
                     return $results;
                 }
@@ -109,14 +168,6 @@ function ExecuteRemoteCommand() {
         ###  we're running in Linux or some other non-windows OS
         ###  so we're going to do SSH Remoting.
         else {
-            $session = New-PSSession -hostname "$Uname@$computer"
-            if ($null -ne $session)
-            {
-            $results = Invoke-Command -Session $session -ScriptBlock $commandscript;
-            return $results;
-            }
-            else {
-                return "Unable to establish a connection to run the command remotely. ;-("
-            }
+           RunCommandInSSH -sUser $Uname -sPassword $userpassword -sHost $computer -sCommand $script -sArguments $parms;
         }
 }
